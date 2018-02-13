@@ -1,6 +1,6 @@
 {
   "name": "ajax-module-loader",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "lego-events": "^1.0.2",
     "scroll-into-view": "^1.9.1"
@@ -11,9 +11,20 @@
     "email": "brandonpoe@me.com",
     "url": "https://brandonpoe.com"
   },
+  "main": "dist/index.js",
   "module": "src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/btpoe/ajax-module-loader"
+  },
+  "devDependencies": {
+    "rollup": "^0.55.5",
+    "rollup-plugin-buble": "^0.19.2",
+    "rollup-plugin-commonjs": "^8.3.0",
+    "rollup-plugin-node-resolve": "^3.0.2"
+  },
+  "scripts": {
+    "build": "rollup --config",
+    "start": "rollup --config --watch"
   }
 }

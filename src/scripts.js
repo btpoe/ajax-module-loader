@@ -53,6 +53,10 @@ function addNew(oldScripts, newScripts, body, newContext, oldContext) {
         const key = script.getAttribute('data-script-key');
         const oldScript = oldScriptMap[script.src];
 
+        function nullEvents() {
+            this.onload = this.onreadystatechange = this.onerror = null;
+        }
+
         if (!oldScript) {
             if ('noModule' in script && script.noModule) return;
             if (!('noModule' in script) && script.type === 'module') return;
@@ -64,14 +68,10 @@ function addNew(oldScripts, newScripts, body, newContext, oldContext) {
             patchScript.crossOrigin = script.crossOrigin;
             patchScript.setAttribute('data-script-key', key);
 
-            function nullEvents() {
-                patchScript.onload = patchScript.onreadystatechange = patchScript.onerror = null;
-            }
-
             scriptPromises.set(key, new Promise((resolve, reject) => {
                 patchScript.onload = patchScript.onreadystatechange = resolve;
                 patchScript.onerror = reject;
-            }).then(nullEvents).catch(nullEvents));
+            }).then(nullEvents.bind(patchScript)).catch(nullEvents.bind(patchScript)));
 
             const deps = script.getAttribute('data-script-dependencies');
 
