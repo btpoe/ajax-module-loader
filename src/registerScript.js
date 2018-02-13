@@ -38,7 +38,7 @@ export default function register(key, {
         onUnload(e.detail.context || document);
     }
 
-    function destroyWrapper(e) {
+    function destroyWrapper() {
         onUnload(document);
         onDestroy();
     }

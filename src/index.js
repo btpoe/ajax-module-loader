@@ -28,7 +28,7 @@ function getOffset() {
         case 'number':
             return config.newPageOffset;
         case 'string':
-            return parseInt(config.newPageOffset, 10) || 0;
+            return Number(config.newPageOffset) || 0;
         default:
             return 0;
     }
