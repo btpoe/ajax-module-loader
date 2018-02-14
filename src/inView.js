@@ -1,5 +1,9 @@
-import { on, off } from 'lego-events';
+import passiveEvents from 'detect-passive-events';
 import { animationHelperClasses, getInstance } from './utils';
+
+function passive() {
+    return passiveEvents.hasSupport ? { passive: true } : false;
+}
 
 let containers = [];
 let shouldRecalculate = true;
@@ -73,17 +77,13 @@ export default function (newContainers, options) {
 }
 
 export function onInit() {
-    on(window, {
-        resize: onWindowResize,
-        scroll: onWindowScroll,
-        load: recalculateBounds
-    });
+    window.addEventListener('resive', onWindowResize, passive());
+    window.addEventListener('scroll', onWindowScroll, passive());
+    window.addEventListener('load', recalculateBounds, passive());
 }
 
 export function onDestroy() {
-    off(window, {
-        resize: onWindowResize,
-        scroll: onWindowScroll,
-        load: recalculateBounds
-    });
+    window.removeEventListener('resive', onWindowResize, passive());
+    window.removeEventListener('scroll', onWindowScroll, passive());
+    window.removeEventListener('load', recalculateBounds, passive());
 }
