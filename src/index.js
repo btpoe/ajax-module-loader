@@ -79,12 +79,15 @@ function goToPage(href = window.location.href, errorPage = false) {
     window.dispatchEvent(new CustomEvent('pageTransitionInitiated'));
 
     const pageResponseListener = document.createElement('div');
-    const newPageResponse = new Promise((resolve) => {
+    let newPageResponse = new Promise(resolve => {
         function onPageResponse(e) {
             resolve(e.detail);
             pageResponseListener.removeEventListener('newPageResponse', onPageResponse);
         }
         pageResponseListener.addEventListener('newPageResponse', onPageResponse);
+    }).then(res => {
+        newPageResponse = { then: cb => cb(res) };
+        return res;
     });
 
     const pageYOffset = window.pageYOffset;
