@@ -77,13 +77,13 @@ export default function (newContainers, options) {
 }
 
 export function onInit() {
-    window.addEventListener('resive', onWindowResize, passive());
+    window.addEventListener('resize', onWindowResize, passive());
     window.addEventListener('scroll', onWindowScroll, passive());
     window.addEventListener('load', recalculateBounds, passive());
 }
 
 export function onDestroy() {
-    window.removeEventListener('resive', onWindowResize, passive());
+    window.removeEventListener('resize', onWindowResize, passive());
     window.removeEventListener('scroll', onWindowScroll, passive());
     window.removeEventListener('load', recalculateBounds, passive());
 }
