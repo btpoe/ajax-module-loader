@@ -1,6 +1,6 @@
 {
   "name": "ajax-module-loader",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "dependencies": {
     "detect-passive-events": "^1.0.4",
     "scroll-into-view": "^1.9.1"
