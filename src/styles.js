@@ -10,28 +10,20 @@ export function removeOld(oldStyles, newStyles) {
     });
 }
 
-export function addNew(oldStyles, newStyles, body) {
+export function addNew(oldStyles, newStyles, head) {
     const oldScriptMap = srcMap(oldStyles, 'href');
-    const firstStyle = body.querySelector('link[ref="stylesheet"],link[href$=".css"]');
     const stylesOnPage = [];
 
-    if (!firstStyle) return stylesOnPage;
-
-    newStyles.reduce((lastStyle, style) => {
+    newStyles.forEach((style) => {
         if (oldScriptMap[style.href]) {
             stylesOnPage.push(oldScriptMap[style.href]);
             return oldScriptMap[style.href];
         }
 
-        if (lastStyle.nextElementSibling) {
-            lastStyle.parentNode.insertBefore(style, lastStyle.nextElementSibling);
-        } else {
-            lastStyle.parentNode.appendChild(style);
-        }
-
+        head.appendChild(style);
         stylesOnPage.push(style);
         return style;
-    }, firstStyle);
+    });
 
     return stylesOnPage;
 }
