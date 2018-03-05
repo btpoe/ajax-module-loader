@@ -3,7 +3,7 @@
 Analyzes page contents to determine what new javascript modules need
 to be loaded and which old modules need to be unloaded.
 
-##Javascript Native API's used:
+## Javascript Native API's used:
 
 (polyfill as needed)
 
