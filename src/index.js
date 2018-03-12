@@ -72,7 +72,9 @@ function goToPage(href = window.location.href, errorPage = false) {
     if (footer) {
         const { height, top } = footer.getBoundingClientRect();
         footer.style.top = `${top}px`;
-        oldContent[0].style.paddingBottom = `${height + 1}px`;
+        oldContent.forEach(previousPage =>
+            previousPage.style.paddingBottom = `${height + 1}px`
+        );
     }
 
     document.documentElement.classList.add('is-pageTransition');

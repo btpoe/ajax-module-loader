@@ -314,28 +314,20 @@ function removeOld$1(oldStyles, newStyles) {
     });
 }
 
-function addNew$1(oldStyles, newStyles, body) {
+function addNew$1(oldStyles, newStyles, head) {
     var oldScriptMap = srcMap(oldStyles, 'href');
-    var firstStyle = body.querySelector('link[ref="stylesheet"],link[href$=".css"]');
     var stylesOnPage = [];
 
-    if (!firstStyle) { return stylesOnPage; }
-
-    newStyles.reduce(function (lastStyle, style) {
+    newStyles.forEach(function (style) {
         if (oldScriptMap[style.href]) {
             stylesOnPage.push(oldScriptMap[style.href]);
             return oldScriptMap[style.href];
         }
 
-        if (lastStyle.nextElementSibling) {
-            lastStyle.parentNode.insertBefore(style, lastStyle.nextElementSibling);
-        } else {
-            lastStyle.parentNode.appendChild(style);
-        }
-
+        head.appendChild(style);
         stylesOnPage.push(style);
         return style;
-    }, firstStyle);
+    });
 
     return stylesOnPage;
 }
@@ -731,7 +723,8 @@ function goToPage(href, errorPage) {
         var height = ref.height;
         var top = ref.top;
         footer.style.top = top + "px";
-        oldContent[0].style.paddingBottom = (height + 1) + "px";
+        oldContent.forEach(function (previousPage) { return previousPage.style.paddingBottom = (height + 1) + "px"; }
+        );
     }
 
     document.documentElement.classList.add('is-pageTransition');
