@@ -340,143 +340,48 @@ function addNew$1(oldStyles, newStyles, body) {
     return stylesOnPage;
 }
 
-var THROTTLED_EVENTS = [
-    'DOMMouseScroll',
-    'MozMousePixelScroll',
-    'mousemove',
-    'mousewheel',
-    'pointermove',
-    'resize',
-    'scroll',
-    'touchmove',
-    'wheel' ];
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
 
-var CANECEL_EVENTS = {
-    'mouseleave': 'mousemove',
-    'touchend': 'touchmove'
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var lib = createCommonjsModule(function (module, exports) {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+// adapted from https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
+var detectPassiveEvents = {
+  update: function update() {
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      var passive = false;
+      var options = Object.defineProperty({}, 'passive', {
+        get: function get() {
+          passive = true;
+        }
+      });
+      // note: have to set and remove a no-op listener instead of null
+      // (which was used previously), becasue Edge v15 throws an error
+      // when providing a null callback.
+      // https://github.com/rafrex/detect-passive-events/pull/3
+      var noop = function noop() {};
+      window.addEventListener('testPassiveEventSupport', noop, options);
+      window.removeEventListener('testPassiveEventSupport', noop, options);
+      detectPassiveEvents.hasSupport = passive;
+    }
+  }
 };
 
-var Symbol$1 = window.Symbol || function (name) {
-    return ("__LEGO__" + name);
-};
+detectPassiveEvents.update();
+exports.default = detectPassiveEvents;
+});
 
-var EVENT_KEY = Symbol$1('events');
+var passiveEvents = unwrapExports(lib);
 
-var fnId = 0;
-
-function lookup(node, type, fn) {
-    var obj = node[EVENT_KEY];
-    if (typeof obj === 'undefined') {
-        obj = node[EVENT_KEY] = {};
-    }
-
-    var list = obj[type];
-    if (typeof list === 'undefined') {
-        list = obj[type] = {};
-    }
-
-    if (typeof fn === 'undefined') {
-        return list;
-    }
-
-    if (typeof fn[EVENT_KEY] === 'undefined') {
-        fn[EVENT_KEY] = "fnId" + (++fnId);
-    }
-
-    var data = list[fn[EVENT_KEY]];
-    if (typeof data === 'undefined' || !data.cb) {
-        data = list[fn[EVENT_KEY]] = {};
-    }
-
-    return data;
-}
-
-function removeEventListener(node, type, data) {
-    if (!data.cb) { return; }
-    node.removeEventListener(type, data.cb);
-    data.cb = false;
-}
-
-function throttle(fn, data) {
-    data.evt = false;
-    var scope;
-
-    function doFn() {
-        fn.call(scope, data.evt);
-        data.evt = false;
-    }
-
-    return function (e) {
-        if (!data.evt) { data.raf = requestAnimationFrame(doFn); }
-        scope = this;
-        data.evt = e;
-    };
-}
-
-function cancelRequest(fn, node, type) {
-    return function (e) {
-        var events = lookup(node, CANECEL_EVENTS[type]);
-        Object.keys(events).forEach(function (key) {
-            cancelAnimationFrame(events[key].raf);
-            events[key].evt = false;
-        });
-        fn.call(this, e);
-    };
-}
-
-function on(node, type, fn, ignoreThrottle) {
-    if (!node) { return; }
-
-    if (node instanceof NodeList) {
-        return Array.prototype.forEach.call(node, function (n) { return on(n, type, fn, ignoreThrottle); });
-    }
-    if (Array.isArray(node)) {
-        return node.forEach(function (n) { return on(n, type, fn, ignoreThrottle); });
-    }
-    if (Array.isArray(type)) {
-        return type.forEach(function (t) { return on(node, t, fn, ignoreThrottle); });
-    }
-    if (typeof type === 'object') {
-        return Object.keys(type).forEach(function (t) { return on(node, t, type[t], fn); });
-    }
-    // exit if not an EventTarget
-    if (!node.addEventListener) { return; }
-
-    var data = lookup(node, type, fn);
-    // only bind events once
-    if (data.cb) { return; }
-
-    data.cb = !ignoreThrottle && ~THROTTLED_EVENTS.indexOf(type) ? throttle(fn, data) : CANECEL_EVENTS[type] ? cancelRequest(fn, node, type) : fn;
-    return node.addEventListener(type, data.cb);
-}
-
-function off(node, type, fn) {
-    if (!node) { return; }
-    
-    if (node instanceof NodeList) {
-        return Array.prototype.forEach.call(node, function (n) { return off(n, type, fn); });
-    }
-    if (Array.isArray(node)) {
-        return node.forEach(function (n) { return off(n, type, fn); });
-    }
-    if (Array.isArray(type)) {
-        return type.forEach(function (t) { return off(node, t, fn); });
-    }
-    if (typeof type === 'object') {
-        return Object.keys(type).forEach(function (t) { return off(node, t, type[t]); });
-    }
-    
-    // exit if not an EventTarget
-    if (!node.removeEventListener) { return; }
-
-    var data = lookup(node, type, fn);
-
-    if (typeof fn === 'undefined') {
-        Object.keys(data).forEach(function (key) { return removeEventListener(node, type, data[key]); });
-    }
-    else {
-        removeEventListener(node, type, data);
-    }
+function passive() {
+    return passiveEvents.hasSupport ? { passive: true } : false;
 }
 
 var containers = [];
@@ -548,19 +453,15 @@ function inView (newContainers, options) {
 }
 
 function onInit() {
-    on(window, {
-        resize: onWindowResize,
-        scroll: onWindowScroll,
-        load: recalculateBounds
-    });
+    window.addEventListener('resize', onWindowResize, passive());
+    window.addEventListener('scroll', onWindowScroll, passive());
+    window.addEventListener('load', recalculateBounds, passive());
 }
 
 function onDestroy() {
-    off(window, {
-        resize: onWindowResize,
-        scroll: onWindowScroll,
-        load: recalculateBounds
-    });
+    window.removeEventListener('resize', onWindowResize, passive());
+    window.removeEventListener('scroll', onWindowScroll, passive());
+    window.removeEventListener('load', recalculateBounds, passive());
 }
 
 var COMPLETE = 'complete';
@@ -843,6 +744,9 @@ function goToPage(href, errorPage) {
             pageResponseListener.removeEventListener('newPageResponse', onPageResponse);
         }
         pageResponseListener.addEventListener('newPageResponse', onPageResponse);
+    }).then(function (res) {
+        newPageResponse = { then: function (cb) { return cb(res); } };
+        return res;
     });
 
     var pageYOffset = window.pageYOffset;
@@ -893,6 +797,12 @@ function goToPage(href, errorPage) {
             newDoc.innerHTML = newPageContent;
             document.body.className = getBodyClass(newPageContent);
             document.title = newDoc.querySelector('title').innerText;
+
+            document.querySelector('[property="og:title"]').setAttribute('content', document.title);
+            document.querySelector('[property="og:description"]').setAttribute('content', newDoc.querySelector('[property="og:description"]').getAttribute('content'));
+            document.querySelector('[property="og:image"]').setAttribute('content', newDoc.querySelector('[property="og:image"]').getAttribute('content'));
+            document.querySelector('[property="og:url"]').setAttribute('content', newDoc.querySelector('[property="og:url"]').getAttribute('content'));
+
             var newContent = newDoc.querySelector(config.mainContentSelector);
 
             pageResponseListener.dispatchEvent(new CustomEvent('newPageResponse', {

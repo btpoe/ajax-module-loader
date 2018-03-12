@@ -138,6 +138,12 @@ function goToPage(href = window.location.href, errorPage = false) {
             newDoc.innerHTML = newPageContent;
             document.body.className = getBodyClass(newPageContent);
             document.title = newDoc.querySelector('title').innerText;
+
+            document.querySelector('[property="og:title"]').setAttribute('content', document.title);
+            document.querySelector('[property="og:description"]').setAttribute('content', newDoc.querySelector('[property="og:description"]').getAttribute('content'));
+            document.querySelector('[property="og:image"]').setAttribute('content', newDoc.querySelector('[property="og:image"]').getAttribute('content'));
+            document.querySelector('[property="og:url"]').setAttribute('content', newDoc.querySelector('[property="og:url"]').getAttribute('content'));
+
             const newContent = newDoc.querySelector(config.mainContentSelector);
 
             pageResponseListener.dispatchEvent(new CustomEvent('newPageResponse', {
